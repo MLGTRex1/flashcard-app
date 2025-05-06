@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Keep ALL existing CSS from your previous index.html --- */
+        :root {
+            /* Modern color palette */
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --secondary-color: #2ec4b6;
+            --accent-color: #ff9f1c;
+            --success-color: #2dc653;
+            --warning-color: #ff9f1c;
+            --danger-color: #e63946;
+            --dark-color: #293241;
+            --light-color: #f8f9fa;
+            --sidebar-bg: #f0f4f8;
+            --content-bg: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #e9ecef;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+
+            /* Typography */
+            --heading-font: 'Poppins', sans-serif;
+            --body-font: 'Inter', sans-serif;
+            --mono-font: 'Roboto Mono', monospace;
+
+            /* Spacing */
+            --sidebar-width: 280px;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--content-bg);
+            font-family: var(--body-font);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--heading-font);
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        /* Ensure headings inside markdown content also use body font if desired */
+        .card-content-wrapper h1, .card-content-wrapper h2, .card-content-wrapper h3,
+        .card-content-wrapper h4, .card-content-wrapper h5, .card-content-wrapper h6,
+        .source-popover-content h1, .source-popover-content h2, .source-popover-content h3,
+        .source-popover-content h4, .source-popover-content h5, .source-popover-content h6,
+        #full-source-text-content h1, #full-source-text-content h2, #full-source-text-content h3,
+        #full-source-text-content h4, #full-source-text-content h5, #full-source-text-content h6 {
+             font-family: var(--body-font); /* Or keep heading font if preferred */
+             /* Add more specific styles if needed */
+             margin-top: 1rem;
+             margin-bottom: 0.5rem;
+             font-weight: 600;
+        }
+        .card-content-wrapper p, .source-popover-content p, #full-source-text-content p {
+            margin-bottom: 0.8rem; /* Spacing for paragraphs in markdown */
+        }
+        .card-content-wrapper ul, .card-content-wrapper ol,
+        .source-popover-content ul, .source-popover-content ol,
+        #full-source-text-content ul, #full-source-text-content ol {
+            padding-left: 1.5rem; /* Indent lists in markdown */
+            margin-bottom: 0.8rem;
+        }
+        .card-content-wrapper code, .source-popover-content code, #full-source-text-content code {
+             font-family: var(--mono-font);
+             background-color: #e9ecef;
+             padding: 0.2em 0.4em;
+             border-radius: 3px;
+             font-size: 85%;
+             color: var(--dark-color);
+        }
+        .card-content-wrapper pre code, .source-popover-content pre code, #full-source-text-content pre code { /* Code blocks */
+             display: block;
+             padding: 1rem;
+             white-space: pre;
+             overflow-x: auto;
+             background-color: #f8f9fa; /* Different background for blocks */
+             border: 1px solid var(--card-border);
+             border-radius: 4px;
+             margin-bottom: 0.8rem;
+        }
+
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--sidebar-bg) 0%, #e6eef5 100%);
+            padding: 30px 20px;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .brand-icon {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .brand-text {
+            font-family: var(--heading-font);
+            font-weight: 600;
+            font-size: 1.4rem;
+            margin: 0;
+            color: var(--dark-color);
+        }
+
+        .sidebar .nav-link {
+            color: var(--dark-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .sidebar .nav-link:hover:not(.active) {
+            background-color: rgba(67, 97, 238, 0.08);
+            transform: translateX(5px);
+        }
+
+        .content {
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+            transition: all 0.3s ease;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .page-description {
+            color: #6c757d;
+            font-size: 1.05rem;
+            max-width: 800px;
+        }
+
+        .form-control, .btn {
+            border-radius: 8px;
+        }
+
+        textarea#source_text {
+            font-family: var(--mono-font);
+            border: 1px solid var(--card-border);
+            padding: 15px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        textarea#source_text:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .results-section {
+            margin-top: 40px;
+            padding-top: 20px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .results-count {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .bulk-copy-buttons {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-outline-secondary {
+            border-color: #d1d9e6;
+            color: #495057;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .flashcard-container {
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .flashcard {
+            border: 1px solid var(--card-border);
+            padding: 25px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            position: relative;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .flashcard:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-3px);
+        }
+
+        .flashcard-q {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1.15rem;
+            color: var(--dark-color);
+        }
+
+        .flashcard-a {
+            margin-left: 15px;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .flashcard-cloze {
+            /* No specific styles needed if relying on general markdown styles above */
+             font-family: var(--body-font); /* Ensure body font */
+             line-height: 1.6;
+             font-size: 1.05rem;
+        }
+        /* Styling for cloze specifically if needed */
+        .flashcard-cloze strong { /* Example if bold in cloze needs special look */
+            font-weight: 700;
+        }
+
+
+        .flashcard-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .flashcard-actions .btn {
+            border-radius: 6px;
+            padding: 6px 10px;
+            transition: all 0.2s ease;
+        }
+
+        .flashcard-actions .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        .btn-success:hover { background-color: #25a244; border-color: #25a244; }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+         .btn-warning:hover { background-color: #e99019; border-color: #e99019; }
+
+        .btn-info {
+            background-color: #4cc9f0;
+            border-color: #4cc9f0;
+        }
+         .btn-info:hover { background-color: #3cb8d8; border-color: #3cb8d8; }
+
+        .btn-outline-info {
+            color: #4cc9f0;
+            border-color: #4cc9f0;
+        }
+
+        .btn-outline-info:hover {
+            background-color: #4cc9f0;
+            color: white;
+        }
+
+        .status-indicator {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 15px; /* Reduced margin */
+            margin-bottom: 5px; /* Added margin below */
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator:before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #adb5bd;
+        }
+
+        /* Status borders and indicators */
+        .status-kept {
+            border-left: 5px solid var(--success-color);
+        }
+
+        .status-kept .status-indicator:before {
+            background-color: var(--success-color);
+        }
+
+        .status-flagged {
+            border-left: 5px solid var(--warning-color);
+        }
+
+        .status-flagged .status-indicator:before {
+            background-color: var(--warning-color);
+        }
+
+        .status-new {
+            border-left: 5px solid #4cc9f0;
+        }
+
+        .status-new .status-indicator:before {
+            background-color: #4cc9f0;
+        }
+
+        /* --- NEW CSS for Highest Similarity --- */
+        .highest-similarity-info {
+            font-size: 0.85rem;
+            color: #495057;
+            margin-top: 5px; /* Space below status */
+            margin-bottom: 15px; /* Space above details */
+            display: block; /* Ensure it takes its own line */
+            padding: 5px 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+        }
+
+        .high-match-alert {
+            font-weight: 600;
+            padding: 3px 8px !important; /* Ensure padding overrides default badge */
+            vertical-align: middle; /* Align icon and text better */
+            font-size: 0.8rem !important; /* Control size */
+        }
+        .high-match-alert i {
+             font-size: 0.9rem; /* Adjust icon size */
+             margin-right: 3px;
+        }
+        /* --- End NEW CSS --- */
+
+        /* Details/summary styling */
+        details {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-top: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        details:hover {
+            border-color: #d1d9e6;
+        }
+
+        details summary {
+            padding: 12px 18px;
+            background: linear-gradient(to right, #f8f9fa, #f1f3f5);
+            cursor: pointer;
+            list-style: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        details summary::-webkit-details-marker,
+        details summary::marker {
+            display: none;
+        }
+
+        details summary:after {
+            content: "\f282";
+            font-family: "bootstrap-icons";
+            margin-left: auto;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary:after {
+            transform: rotate(180deg);
+        }
+
+        details summary:hover {
+            background: linear-gradient(to right, #f1f3f5, #e9ecef);
+        }
+
+        .similar-cards-content {
+            padding: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            background-color: #fff;
+        }
+
+        .existing-card {
+            border: 1px dashed #d1d9e6;
+            margin-top: 12px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .existing-card:hover {
+            background-color: #f0f4f8;
+        }
+
+        .similar-card-item {
+            display: block;
+        }
+
+        .show-more-btn {
+            margin-top: 15px;
+            background-color: #e9ecef;
+            border: none;
+            color: #495057;
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .show-more-btn:hover {
+            background-color: #dee2e6;
+        }
+
+        /* Warning icon used for duplicate check during generation (vs CSV/Session) */
+        .warning-icon {
+            color: #fd7e14; /* Orange for potential duplicate */
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 1.2rem;
+            cursor: help; /* Indicate hover tooltip */
+        }
+
+
+        .error {
+            color: var(--danger-color);
+            font-weight: 500;
+            padding: 15px;
+            background-color: rgba(230, 57, 70, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .warnings {
+            color: var(--warning-color);
+            padding: 15px;
+            background-color: rgba(255, 159, 28, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .warnings li {
+            margin-bottom: 8px;
+        }
+
+        .source-popover-content {
+            max-height: 300px; /* Increased height */
+            overflow-y: auto;
+            font-size: 0.9rem; /* Slightly larger font */
+            white-space: normal; /* Allow wrapping */
+            word-wrap: break-word;
+            max-width: 600px !important; /* <<< INCREASED POPOVER CONTENT WIDTH */
+            padding: 15px; /* Increased padding */
+            font-family: var(--body-font); /* Use body font */
+            line-height: 1.6;
+        }
+
+        .popover {
+            max-width: 620px !important; /* <<< INCREASED POPOVER MAX WIDTH */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.1); /* Added subtle border */
+        }
+        /* Ensure popover body has no extra padding if content div handles it */
+        .popover-body {
+            padding: 0;
+        }
+
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--card-border);
+            padding: 20px 25px;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        /* Styles for the div replacing pre */
+        #full-source-text-content {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 65vh;
+            overflow-y: auto;
+            white-space: normal; /* Allow normal wrapping */
+            word-wrap: break-word;
+            font-family: var(--body-font); /* Use standard body font */
+            font-size: 0.95rem; /* Adjust size */
+            line-height: 1.6;
+        }
+         /* Add specific styles for elements within the modal content if needed */
+        #full-source-text-content p { margin-bottom: 1rem; }
+        #full-source-text-content ul,
+        #full-source-text-content ol { padding-left: 2rem; margin-bottom: 1rem; }
+        #full-source-text-content code {
+            font-family: var(--mono-font);
+            background-color: #e9ecef;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+            color: var(--dark-color);
+        }
+        #full-source-text-content pre { /* Handle potential <pre> tags within markdown */
+             background-color: #e9ecef;
+             border: 1px solid #dee2e6;
+             padding: 1rem;
+             border-radius: 4px;
+             overflow-x: auto;
+             margin-bottom: 1rem;
+        }
+        #full-source-text-content pre code { /* Code inside pre */
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            font-size: inherit;
+            white-space: pre;
+        }
+         #full-source-text-content blockquote {
+            border-left: 4px solid #adb5bd;
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-bottom: 1rem;
+            color: #495057;
+            font-style: italic;
+         }
+         #full-source-text-content h1,
+         #full-source-text-content h2,
+         #full-source-text-content h3,
+         #full-source-text-content h4 {
+             margin-top: 1.5rem;
+             margin-bottom: 0.8rem;
+             font-weight: 600;
+         }
+
+
+        .modal-footer {
+            border-top: 1px solid var(--card-border);
+            padding: 15px 25px;
+        }
+
+        .highlight {
+            background-color: rgba(255, 159, 28, 0.3);
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+
+        /* Alert styling */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .alert-success {
+            background-color: rgba(45, 198, 83, 0.1);
+            color: var(--success-color);
+        }
+
+        .alert-danger {
+            background-color: rgba(230, 57, 70, 0.1);
+            color: var(--danger-color);
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 159, 28, 0.1);
+            color: var(--warning-color);
+        }
+
+        /* Responsiveness */
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 240px;
+                padding: 20px 15px;
+            }
+
+            .content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+                padding: 30px;
+            }
+
+            :root {
+                --sidebar-width: 240px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .sidebar {
+                width: 220px;
+                padding: 15px 10px;
+            }
+
+            .content {
+                margin-left: 220px;
+                width: calc(100% - 220px);
+                padding: 20px;
+            }
+
+            :root {
+                --sidebar-width: 220px;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .flashcard {
+                padding: 20px;
+            }
+            .flashcard-actions { /* Stack actions vertically */
+                 flex-direction: column;
+                 align-items: flex-end;
+                 top: 10px;
+                 right: 10px;
+                 gap: 5px;
+            }
+        }
+
+        /* Animation effects */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .flashcard-container {
+            animation: fadeIn 0.4s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="bi bi-card-text"></i></div>
+            <h4 class="brand-text">FlashMaster</h4>
+        </div>
+        <ul class="nav flex-column">
+        </ul>
+    </div>
+
+
+    <div class="content">
+        <div class="page-header">
+            <h1 class="page-title">Generate New Flashcards</h1>
+            <p class="page-description">Paste your source text below to generate flashcards. All cards are automatically saved to your history for future reference.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-info-circle me-2"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('generate') }}" method="POST">
+            <div class="mb-4">
+                <label for="source_text" class="form-label"><i class="bi bi-file-text me-2"></i>Source Text:</label>
+                <textarea class="form-control" id="source_text" name="source_text" rows="10" required placeholder="Paste your text here...">{{ source_text or '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-lightning-charge me-2"></i>Generate & Check Similarity
+            </button>
+        </form>
+
+        {% if generated_cards %}
+            <div class="results-section">
+                <div class="results-header">
+                    <h2 class="results-title">Generated Flashcards</h2>
+                    <span class="results-count">{{ generated_cards|length }} cards</span>
+                </div>
+                <div class="bulk-copy-buttons">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="copyBulkCards('all', 'generated-cards-area')">
+                        <i class="bi bi-clipboard-check me-1"></i> Copy All Generated
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="copyBulkCards('basic', 'generated-cards-area')">
+                        <i class="bi bi-clipboard me-1"></i> Copy Basic
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="copyBulkCards('cloze', 'generated-cards-area')">
+                        <i class="bi bi-clipboard me-1"></i> Copy Cloze
+                    </button>
+                </div>
+                <div id="generated-cards-area">
+                    {% for card in generated_cards %}
+                        <div class="flashcard-container" id="card-container-{{ card.id }}"
+                             data-card-type="{{ card.card_type | default(card.type, true) | default('unknown') }}"
+                             data-front="{{ card.front_raw or card.front or '' }}"
+                             data-back="{{ card.back_raw or card.back or '' }}"
+                             data-fulltext="{{ card.full_text_raw or card.full_text or '' }}"
+                             data-session-id="{{ card.session_id or '' }}"
+                             data-source-chunk="{{ card.source_chunk or '' }}"
+                             data-source-chunk-html="{{ card.source_chunk_html or '...' }}">
+                            <div class="flashcard status-{{ card.status | default('new') }}">
+                                <div class="flashcard-actions">
+                                    <button class="btn btn-sm btn-outline-info view-source-btn" title="View Source Chunk (Hover) / Full Source (Click)"
+                                            data-bs-toggle="popover"
+                                            data-bs-placement="left"
+                                            data-bs-custom-class="source-popover"
+                                            data-bs-html="true"
+                                            onclick="viewFullSource('{{ card.session_id or '' }}', {{ card.id }})">
+                                        <i class="bi bi-file-text"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success keep-btn {{ 'active' if card.status == 'kept' else '' }}" title="Keep Card" onclick="updateStatus({{ card.id }}, 'kept', this)">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning flag-btn {{ 'active' if card.status == 'flagged' else '' }}" title="Flag for Review" onclick="updateStatus({{ card.id }}, 'flagged', this)">
+                                        <i class="bi bi-flag"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info" title="Copy Card Content" onclick="copyCardContent(this)">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                     <button class="btn btn-sm btn-primary remake-btn" title="Remake Card" onclick="remakeCard({{ card.id }}, this)">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </div>
+
+                                {# Optional: Keep the original warning icon for duplicate check vs CSV/Session if needed #}
+                                {# {% if card.has_high_similarity_duplicate %}
+                                    <span class="warning-icon float-end" title="Potential duplicate found (>= {{ similarity_threshold | default(0.8, true) }}) vs CSV/Session!">⚠️</span>
+                                {% endif %} #}
+
+                                <div class="card-content-wrapper mb-2">
+                                    {% set card_type = card.card_type | default(card.type, true) | default('unknown') %}
+                                    {% if card_type == 'basic' %}
+                                        <div class="flashcard-q">Q: {{ card.front | safe }}</div> {# Use safe filter #}
+                                        <div class="flashcard-a">A: {{ card.back | safe }}</div> {# Use safe filter #}
+                                    {% elif card_type == 'cloze' %}
+                                        <div class="flashcard-cloze">{{ card.full_text | safe }}</div> {# Use safe filter #}
+                                    {% else %}
+                                        <div>Type: {{ card_type }}</div>
+                                        <div>Content: {{ card.front | safe }}{{ card.full_text | safe }}{{ card.back | safe }}</div> {# Use safe filter #}
+                                    {% endif %}
+                                </div>
+
+                                <span class="status-indicator">
+                                    <span class="status-text">{{ card.status | default('new') }}</span>
+                                </span>
+
+                                {% if card.highest_similarity_score is not none and card.highest_similarity_score >= 0 %} {# Check score exists and is valid #}
+                                    <div class="highest-similarity-info"> {# Use a div for block display #}
+                                        <strong>Highest Similarity:</strong> {{ "%.3f"|format(card.highest_similarity_score) }}
+                                        (ID: {{ card.highest_similarity_id | default('N/A', true) }})
+                                        {% if card.highest_similarity_score >= (similarity_threshold | default(0.8)) %}
+                                            <span class="badge bg-danger ms-1 high-match-alert">
+                                                <i class="bi bi-exclamation-triangle-fill"></i> High Match!
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                {% if card.similar_existing_cards %} {# Check if the list exists and is not empty #}
+                                    <details>
+                                        <summary>Show {{ card.similar_existing_cards|length }} Similar Card(s)</summary>
+                                        <div class="similar-cards-content">
+                                            {% for similar in card.similar_existing_cards %}
+                                                <div class="existing-card similar-card-item" style="{{ 'display: none;' if loop.index0 >= 5 else '' }}">
+                                                    <div>
+                                                        <strong>ID:</strong> {{ similar.id | default('N/A', true) }} |
+                                                        <strong>Similarity:</strong> {{ "%.3f"|format(similar.similarity) }}
+                                                        {# Optional: Redundant high match badge inside details? Remove if highest sim display is enough #}
+                                                        {# {% if similar.similarity >= (similarity_threshold | default(0.8, true)) %}
+                                                            <span class="badge bg-danger ms-2">High Match</span>
+                                                        {% endif %} #}
+                                                    </div>
+                                                    {% set sim_type = similar.type | default(similar.card_type, true) | default('unknown') %}
+                                                    {# Display similar card content safely #}
+                                                    {% if sim_type == 'basic' %}
+                                                        <div class="flashcard-q">Q: {{ similar.front | safe }}</div>
+                                                        <div class="flashcard-a">A: {{ similar.back | safe }}</div>
+                                                    {% elif sim_type == 'cloze' %}
+                                                        <div class="flashcard-cloze">Cloze: {{ similar.full_text | safe }}</div>
+                                                    {% else %}
+                                                        <div>Type: {{ sim_type }}</div>
+                                                        <div>Content: {{ similar.front | safe }}{{ similar.full_text | safe }}{{ similar.back | safe }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                            {% if card.similar_existing_cards|length > 5 %}
+                                                <button class="btn btn-secondary btn-sm show-more-btn" onclick="showMore(this)">
+                                                    Show More ({{ [card.similar_existing_cards|length - 5, 10]|min }})
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </details>
+                                {% endif %}
+                                </div> {# End of div.flashcard #}
+                        </div> {# End of div.flashcard-container #}
+                    {% endfor %}
+                </div>
+            </div>
+        {% elif request.method == 'POST' %}
+            <div class="results-section">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i> No cards were generated from the provided text.
+                </div>
+            </div>
+        {% endif %}
+
+        {% if error %}
+            <div class="results-section">
+                <h2>Error</h2>
+                <p class="error"><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        {% if warnings %}
+            <div class="results-section">
+                <h2>Parsing Warnings</h2>
+                <ul class="warnings">
+                    {% for w in warnings %}
+                        <li><i class="bi bi-exclamation-circle me-2"></i>{{ w }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="modal fade" id="sourceTextModal" tabindex="-1" aria-labelledby="sourceTextModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sourceTextModalLabel">Full Source Text</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="full-source-text-content">Loading...</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- Keep ALL existing Javascript functions ---
+         document.addEventListener('DOMContentLoaded', function () {
+            // --- POPOVER INITIALIZATION ---
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.forEach(function (popoverTriggerEl) {
+                const cardContainer = popoverTriggerEl.closest('.flashcard-container');
+                const popoverHtmlContent = cardContainer ? cardContainer.dataset.sourceChunkHtml : 'Error loading content.';
+
+                const popover = new bootstrap.Popover(popoverTriggerEl, {
+                    trigger: 'manual',
+                    html: true,
+                    placement: 'left',
+                    customClass: 'source-popover',
+                    content: `<div class='source-popover-content'>${popoverHtmlContent}</div>`,
+                    sanitize: false // Allow HTML from Markdown
+                });
+
+                let popoverTimeout;
+                let isPopoverVisible = false;
+                let popoverElement = null; // To store reference to the popover DOM element
+
+                function showPopover() {
+                    if (!isPopoverVisible) {
+                        clearTimeout(popoverTimeout);
+                        popover.show();
+                    }
+                }
+
+                function hidePopoverWithDelay() {
+                    clearTimeout(popoverTimeout);
+                    popoverTimeout = setTimeout(() => {
+                        const isHoveringTrigger = popoverTriggerEl.matches(':hover');
+                        const isHoveringPopover = popoverElement && popoverElement.matches(':hover');
+
+                        if (!isHoveringTrigger && !isHoveringPopover && isPopoverVisible) {
+                            popover.hide();
+                        }
+                    }, 150); // Delay before hiding
+                }
+
+                popoverTriggerEl.addEventListener('show.bs.popover', () => {
+                    isPopoverVisible = true;
+                });
+
+                popoverTriggerEl.addEventListener('shown.bs.popover', () => {
+                    popoverElement = document.getElementById(popoverTriggerEl.getAttribute('aria-describedby'));
+                    if (popoverElement) {
+                        popoverElement.addEventListener('mouseenter', () => clearTimeout(popoverTimeout));
+                        popoverElement.addEventListener('mouseleave', hidePopoverWithDelay);
+                    }
+                });
+
+                popoverTriggerEl.addEventListener('hide.bs.popover', () => {
+                     // Remove listeners when hiding to prevent memory leaks
+                    if (popoverElement) {
+                       popoverElement.removeEventListener('mouseenter', () => clearTimeout(popoverTimeout));
+                       popoverElement.removeEventListener('mouseleave', hidePopoverWithDelay);
+                       popoverElement = null; // Clear reference
+                    }
+                    isPopoverVisible = false;
+                });
+
+                popoverTriggerEl.addEventListener('mouseenter', showPopover);
+                popoverTriggerEl.addEventListener('mouseleave', hidePopoverWithDelay);
+            });
+             // Global click listener to hide popovers when clicking away
+            document.addEventListener('click', function (event) {
+                popoverTriggerList.forEach(function (popoverTriggerEl) {
+                    const popoverInstance = bootstrap.Popover.getInstance(popoverTriggerEl);
+                    if (popoverInstance && popoverInstance._isShown()) {
+                         const popoverElement = document.getElementById(popoverTriggerEl.getAttribute('aria-describedby'));
+                         // If click is outside trigger and outside popover
+                         if (!popoverTriggerEl.contains(event.target) && (!popoverElement || !popoverElement.contains(event.target))) {
+                              popoverInstance.hide();
+                         }
+                    }
+                });
+            });
+        }); // End DOMContentLoaded
+
+
+        function showMore(button) { const contentDiv = button.parentElement; const similarCards = contentDiv.querySelectorAll('.similar-card-item'); let newlyShown = 0; similarCards.forEach(card => { if (card.style.display === 'none' && newlyShown < 10) { card.style.display = 'block'; newlyShown++; } }); const stillHidden = Array.from(similarCards).some(card => card.style.display === 'none'); if (!stillHidden) { button.style.display = 'none'; } else { const remaining = Array.from(similarCards).filter(card => card.style.display === 'none').length; button.textContent = `Show More (${Math.min(remaining, 10)})`; } }
+        function updateStatus(cardId, newStatus, buttonElement) { const cardContainer = document.getElementById(`card-container-${cardId}`); const flashcardDiv = cardContainer ? cardContainer.querySelector('.flashcard') : null; const statusTextSpan = flashcardDiv ? flashcardDiv.querySelector('.status-indicator .status-text') : null; const actionButtons = flashcardDiv ? flashcardDiv.querySelectorAll('.flashcard-actions button') : []; actionButtons.forEach(btn => btn.disabled = true); fetch(`/update_status/${cardId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }).then(response => response.json()).then(data => { if (data.success) { if (flashcardDiv && statusTextSpan) { flashcardDiv.classList.remove('status-new', 'status-kept', 'status-flagged'); flashcardDiv.classList.add(`status-${data.new_status}`); statusTextSpan.textContent = data.new_status; const keepBtn = flashcardDiv.querySelector('.keep-btn'); const flagBtn = flashcardDiv.querySelector('.flag-btn'); if (keepBtn) keepBtn.classList.toggle('active', data.new_status === 'kept'); if (flagBtn) flagBtn.classList.toggle('active', data.new_status === 'flagged'); actionButtons.forEach(btn => btn.classList.remove('active')); if (buttonElement) buttonElement.classList.add('active'); } } else { alert(`Error: ${data.error || 'Unknown error'}`); } }).catch(error => { console.error('Error:', error); alert('Server error.'); }).finally(() => { actionButtons.forEach(btn => btn.disabled = false); }); }
+
+        // --- Helper Function to Strip HTML ---
+        function stripHtml(html) {
+            let tmp = document.createElement("DIV");
+            tmp.innerHTML = html || "";
+            return tmp.textContent || tmp.innerText || "";
+        }
+
+        // --- Updated copyCardContent ---
+        function copyCardContent(buttonElement) {
+            const container = buttonElement.closest('.flashcard-container');
+            if (!container) return;
+            const cardType = container.dataset.cardType;
+            // Get RAW data from data-* attributes for copying
+            const rawFront = container.dataset.front || '';
+            const rawBack = container.dataset.back || '';
+            const rawFulltext = container.dataset.fulltext || '';
+            let textToCopy = '';
+
+            // Strip potential HTML tags from raw data
+            const plainFront = stripHtml(rawFront);
+            const plainBack = stripHtml(rawBack);
+            const plainFulltext = stripHtml(rawFulltext);
+
+            if (cardType === 'basic') {
+                // Format: Question\nAnswer (Plain text)
+                textToCopy = `${plainFront}\n${plainBack}`;
+            } else if (cardType === 'cloze') {
+                // Format: Cloze text (single line, plain text)
+                textToCopy = plainFulltext;
+            } else {
+                // Fallback: Concatenate plain text parts
+                textToCopy = `${plainFront}${plainFulltext}${plainBack}`;
+            }
+
+            navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+                const originalText = buttonElement.innerHTML;
+                buttonElement.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+                buttonElement.classList.add('btn-success');
+                buttonElement.classList.remove('btn-info');
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalText;
+                    buttonElement.classList.remove('btn-success');
+                    buttonElement.classList.add('btn-info');
+                }, 1500);
+            }).catch(err => {
+                console.error('Copy failed: ', err);
+                alert('Copy failed.');
+            });
+        }
+
+        // --- Updated copyBulkCards ---
+        function copyBulkCards(filterType, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const cards = container.querySelectorAll('.flashcard-container');
+            let combinedText = '';
+            let cardCount = 0;
+
+            cards.forEach((cardContainer, index) => {
+                const cardType = cardContainer.dataset.cardType;
+                // Get RAW data from data-* attributes
+                const rawFront = cardContainer.dataset.front || '';
+                const rawBack = cardContainer.dataset.back || '';
+                const rawFulltext = cardContainer.dataset.fulltext || '';
+                let cardText = '';
+
+                 // Strip potential HTML tags from raw data
+                const plainFront = stripHtml(rawFront);
+                const plainBack = stripHtml(rawBack);
+                const plainFulltext = stripHtml(rawFulltext);
+
+                if (filterType === 'all' || cardType === filterType) {
+                    if (cardType === 'basic') {
+                        // Format: Question\nAnswer (Plain text)
+                        cardText = `${plainFront}\n${plainBack}`;
+                    } else if (cardType === 'cloze') {
+                        // Format: Cloze text (single line, plain text)
+                        cardText = plainFulltext;
+                    } // Add other types if needed
+
+                    if (cardText.trim()) {
+                        if (combinedText) {
+                            // Add TWO newlines (one blank line) between cards
+                            combinedText += '\n\n';
+                        }
+                        combinedText += cardText.trim();
+                        cardCount++;
+                    }
+                }
+            });
+
+            if (!combinedText) {
+                alert(`No cards of type '${filterType}' found.`);
+                return;
+            }
+
+            navigator.clipboard.writeText(combinedText).then(() => {
+                alert(`Copied ${cardCount} ${filterType} card(s) to clipboard with requested formatting!`);
+            }).catch(err => {
+                console.error('Bulk copy failed: ', err);
+                alert('Bulk copy failed.');
+            });
+        }
+
+
+        function viewFullSource(sessionId, cardId) { if (!sessionId) { alert('Session ID not found.'); return; } const sourceModal = new bootstrap.Modal(document.getElementById('sourceTextModal')); const sourceContentEl = document.getElementById('full-source-text-content'); const cardContainer = document.getElementById(`card-container-${cardId}`); const sourceChunkHTML = cardContainer ? cardContainer.dataset.sourceChunkHtml || '' : ''; sourceContentEl.innerHTML = 'Loading full source...'; sourceModal.show(); fetch(`/get_full_source/${sessionId}`).then(response => response.json()).then(data => { if (data.success && data.source_text) { let fullTextHTML = data.source_text; /* Backend now sends HTML */ sourceContentEl.innerHTML = fullTextHTML; /* Skip complex highlighting for now */ } else { sourceContentEl.textContent = `Error: ${data.error || 'Source not found.'}`; } }).catch(error => { console.error('Error fetching source:', error); sourceContentEl.textContent = 'Error loading source.'; }); }
+
+        // Updated remakeCard to handle HTML content from response
+        function remakeCard(cardId, buttonElement) {
+            console.log("Remake requested for card ID:", cardId);
+            const cardContainer = document.getElementById(`card-container-${cardId}`);
+            const contentWrapper = cardContainer ? cardContainer.querySelector('.card-content-wrapper') : null;
+            if (!cardContainer || !contentWrapper) { alert("Error: Card elements not found."); return; }
+            const originalButtonHTML = buttonElement.innerHTML;
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            fetch(`/remake_card/${cardId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.updated_card) {
+                    console.log("Remake successful:", data.updated_card);
+                    const updatedCard = data.updated_card;
+                    let newHTML = '';
+                     // Use the HTML content directly from the response
+                    if (updatedCard.type === 'basic') {
+                        newHTML = `<div class="flashcard-q">Q: ${updatedCard.front}</div> <div class="flashcard-a">A: ${updatedCard.back}</div>`;
+                    } else if (updatedCard.type === 'cloze') {
+                        newHTML = `<div class="flashcard-cloze">${updatedCard.full_text}</div>`;
+                    } else {
+                        newHTML = `<div>Type: ${updatedCard.type}</div><div>Content: ${updatedCard.front}${updatedCard.full_text}${updatedCard.back}</div>`;
+                    }
+                    contentWrapper.innerHTML = newHTML; // Render the HTML
+
+                    // Update data attributes (including the HTML chunk)
+                    cardContainer.dataset.cardType = updatedCard.type || 'unknown';
+                    // Note: Need to potentially update raw data attributes if possible, or accept that copy might be stale until refresh
+                    cardContainer.dataset.sourceChunkHtml = updatedCard.source_chunk_html || '...';
+
+                     // --- START: Update Highest Similarity after Remake (if data is available) ---
+                    // Note: This assumes the backend sends back similarity info after remake. If not, this part won't update until page refresh.
+                    const simInfoDiv = cardContainer.querySelector('.highest-similarity-info');
+                    if (simInfoDiv && updatedCard.highest_similarity_score !== undefined) { // Check if backend provided the data
+                        if (updatedCard.highest_similarity_score !== null && updatedCard.highest_similarity_score >= 0) {
+                            const threshold = {{ similarity_threshold | default(0.8) }}; // Get threshold from template context
+                            let simHTML = `<strong>Highest Similarity:</strong> ${updatedCard.highest_similarity_score.toFixed(3)} (ID: ${updatedCard.highest_similarity_id || 'N/A'})`;
+                            if (updatedCard.highest_similarity_score >= threshold) {
+                                simHTML += ` <span class="badge bg-danger ms-1 high-match-alert"><i class="bi bi-exclamation-triangle-fill"></i> High Match!</span>`;
+                            }
+                            simInfoDiv.innerHTML = simHTML;
+                            simInfoDiv.style.display = 'block';
+                        } else {
+                            simInfoDiv.style.display = 'none'; // Hide if no valid similarity
+                        }
+                    } else if (simInfoDiv) {
+                         simInfoDiv.style.display = 'none'; // Hide if data wasn't sent back
+                    }
+                    // --- END: Update Highest Similarity after Remake ---
+
+
+                    // Visual feedback
+                    const flashcardDiv = cardContainer.querySelector('.flashcard');
+                    if(flashcardDiv) {
+                        flashcardDiv.style.transition = 'background-color 0.5s ease';
+                        flashcardDiv.style.backgroundColor = 'rgba(45, 198, 83, 0.15)';
+                        setTimeout(() => {
+                            flashcardDiv.style.backgroundColor = '';
+                            flashcardDiv.style.transition = '';
+                        }, 1500);
+                    }
+                } else { alert(`Remake failed: ${data.error || 'Unknown error'}`); }
+            })
+            .catch(error => { console.error('Remake fetch error:', error); alert('Network error during remake.'); })
+            .finally(() => { buttonElement.disabled = false; buttonElement.innerHTML = originalButtonHTML; });
+        }
+   </script>
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert to Anki</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="file"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        textarea {
+            min-height: 200px;
+            font-family: monospace;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .download-link:hover {
+            background-color: #218838;
+        }
+
+        .input-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .or-divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Convert Flashcards to Anki Package</h1>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if success_file %}
+    <div class="alert alert-success">
+        Successfully created Anki package!<br>
+        <a href="{{ url_for('download_anki_package', filename=success_file) }}" class="download-link">Download {{ success_file }}</a>
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="deck_name">Deck Name</label>
+            <input type="text" id="deck_name" name="deck_name" placeholder="Enter deck name" value="{{ deck_name or 'Generated Flashcards' }}">
+        </div>
+
+        <div class="input-section">
+            <div class="form-group">
+                <label for="file">Upload Flashcards Text File</label>
+                <input type="file" id="file" name="file" accept=".txt,.md">
+            </div>
+
+            <div class="or-divider">OR</div>
+
+            <div class="form-group">
+                <label for="text_content">Paste Flashcards Text</label>
+                <textarea id="text_content" name="text_content" placeholder="Paste your flashcard content here..."></textarea>
+            </div>
+        </div>
+
+        <button type="submit">Convert to Anki Package</button>
+    </form>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <h3>Format Requirements:</h3>
+        <ul>
+            <li>Basic cards: Question on one line, answer on the next line(s)</li>
+            <li>Cloze cards: Use {{ "{{c1::text}}" }} format</li>
+            <li>Empty lines separate different cards</li>
+            <li>Headers (starting with ## or ####) are removed automatically</li>
+        </ul>
+    </div>
+</body>
+</html>
