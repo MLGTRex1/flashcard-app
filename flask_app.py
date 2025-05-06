@@ -506,6 +506,30 @@ def process_cards_for_template(card_list):
         processed_list.append(card_dict)
     return processed_list
 
+CLEANUP_AGE_MINUTES = 60  # Clean up files older than 1 hour
+
+# Add this function
+def cleanup_old_files():
+    """Remove temp files older than CLEANUP_AGE_MINUTES minutes"""
+    if not os.path.exists(TEMP_DIR):
+        return
+
+    current_time = datetime.now()
+    cutoff_time = current_time - timedelta(minutes=CLEANUP_AGE_MINUTES)
+
+    for filename in os.listdir(TEMP_DIR):
+        if filename.endswith('.apkg'):
+            file_path = os.path.join(TEMP_DIR, filename)
+            file_modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+
+            if file_modified_time < cutoff_time:
+                try:
+                    os.remove(file_path)
+                    print(f"Cleaned up old file: {filename}")
+                except Exception as e:
+                    print(f"Error cleaning up {filename}: {e}")
+
+
 # --- Routes ---
 
 @app.route('/')
@@ -593,6 +617,7 @@ def convert_to_anki():
     # Get content from either file upload or text input
     content = None
     deck_name = request.form.get('deck_name', 'Generated Flashcards')
+    cleanup_old_files()
 
     # Check for text content first
     text_content = request.form.get('text_content', '').strip()
