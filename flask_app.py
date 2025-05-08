@@ -10,6 +10,8 @@ import tempfile
 import uuid
 from datetime import datetime
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, send_file
+from datetime import datetime, timedelta
+
 
 # Import specific functions from flashcard_logic
 try:
